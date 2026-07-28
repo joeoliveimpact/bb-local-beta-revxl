@@ -1,11 +1,7 @@
 # Booking Bandit — Local Claude Engine (Beta)
 
 Private test bundle. This runs Booking Bandit's DM drafts on **your own Claude Max
-subscription**, right on your computer — no API key, nothing billed to you per draft.
-
-Two pieces:
-- **`extension-beta/`** — the Chrome extension (Beta build).
-- **`local-engine/`** — a small helper that lets the extension talk to Claude Code on your machine.
+subscription**, right on your computer — no API key, nothing billed per draft.
 
 Works on **Windows** and **macOS**, **Chrome only**.
 
@@ -13,69 +9,79 @@ Works on **Windows** and **macOS**, **Chrome only**.
 
 ## Before you start (required)
 
-1. **Claude Code installed and signed in.**
-   - Install: https://claude.com/claude-code
-   - Open a terminal, run `claude`, and sign in with a **Claude Max** account. The
-     local engine uses *this* login to draft — if it's not signed in, drafts fail.
-   - Confirm it works: `claude --version` should print a version.
-2. **Node.js 18 or newer.** Check with `node --version`. If missing: https://nodejs.org
-3. This folder (the whole `bb-local-beta-revxl` download) saved somewhere you can find it.
+You must already have:
+1. **Claude Code installed and signed into a Claude Max account.** (Confirm: open a
+   terminal, run `claude --version` — it should print a version, and `claude` should be
+   signed in.) The local engine drafts using *this* login.
+2. **Google Chrome.**
+
+If you have those, setup below is just a couple of clicks — no commands to type.
 
 ---
 
-## Install — Windows
+## Step 1 — Install the helper (double-click)
 
-1. Open **PowerShell** (Start menu → type "powershell" → Enter).
-2. Paste this, replacing the path if you saved the folder elsewhere:
-   ```powershell
-   Set-ExecutionPolicy -Scope Process Bypass -Force
-   & "<path-to-folder>\local-engine\install\install-windows.ps1" -ExtensionId eoaibojoneilhiagjmmhbbgehnmloelj -Browser all
-   ```
-3. You should see registry lines end with `[verified]` and finish with **`SMOKE PASS (ping)`**.
+**Windows:** double-click **`Install Booking Bandit (Windows).cmd`**
+- If Windows shows a blue "Windows protected your PC" box → click **More info** → **Run anyway**.
+- A window opens, runs by itself, and ends with **`SMOKE PASS`**. Press a key to close.
 
-## Install — macOS
+**macOS:** double-click **`Install Booking Bandit (Mac).command`**
+- The first time, macOS may say *"cannot verify developer."* Fix: **right-click** the file
+  → **Open** → **Open**. (You only do this once.)
+- A Terminal window opens, runs by itself, and ends with **`SMOKE PASS`**. Press a key to close.
 
-1. Open **Terminal** (Cmd-Space → type "terminal" → Enter).
-2. Paste this, replacing the path if you saved the folder elsewhere:
-   ```bash
-   bash "<path-to-folder>/local-engine/install/install-mac.sh"
-   ```
-3. You should see it finish with **`SMOKE PASS (ping)`**.
+That's the only setup step. No typing.
 
 ---
 
-## Load the extension (both OSes)
+## Step 2 — Add the extension to Chrome
 
 1. Open Chrome → go to `chrome://extensions`
 2. Turn on **Developer mode** (top-right toggle)
-3. Click **Load unpacked** → select the **`extension-beta`** folder from this download
-4. Confirm the extension ID reads `eoaibojoneilhiagjmmhbbgehnmloelj`
+3. Click **Load unpacked** → choose the **`extension-beta`** folder in this bundle
+4. The extension ID should read `eoaibojoneilhiagjmmhbbgehnmloelj`
 
-## Turn it on and test
+## Step 3 — Turn it on
 
-1. **Fully quit Chrome** and reopen it (Windows: close every window / `Stop-Process -Name chrome -Force`; macOS: **Cmd-Q**). A normal window-close is *not* enough — Chrome only re-reads the helper after a full restart.
+1. **Fully quit Chrome and reopen it.** Windows: close every Chrome window. macOS: **Cmd-Q**.
+   (A normal window-close is not enough — Chrome only picks up the helper after a full restart.)
 2. Open the **Booking Bandit (Beta)** side panel → gear (Settings) → **Key** tab → **Test local engine**.
-3. Green = you're set. Do one **Deep test**, then try a real **Generate** on a DM thread.
+3. Green = done. Try a real **Generate** on a DM thread.
 
 ---
 
-## If it doesn't work
+## If something doesn't work
 
-Run the doctor and send Joe the full output.
+Send Joe a screenshot of the installer window, and (if the panel shows a red error card)
+click its **Copy diagnostics** button and send that.
 
-- **Windows:** `& "<path>\local-engine\install\doctor-windows.ps1" -Ping`
-- **macOS:** `bash "<path>/local-engine/install/doctor-mac.sh" --ping`
-
-The doctor checks every link in the chain and tells you which one is broken. If the
-error card in the panel has a **Copy diagnostics** button, send that too.
-
-**Most common fix:** you didn't *fully* quit Chrome after installing. Quit it
-completely (menu bar / Task Manager), reopen, test again.
+**Most common fix:** you didn't *fully* quit Chrome after installing. Quit it completely,
+reopen, and hit **Test local engine** again.
 
 ---
 
 ## Updating
 
-When Joe ships a fix, re-download this folder (or `git pull`), re-run the installer
-for your OS, then fully quit + reopen Chrome. The extension you can just **Reload**
-on `chrome://extensions`.
+When Joe ships a fix, re-download this bundle, double-click the installer again, then fully
+quit + reopen Chrome. The extension itself you can just **Reload** on `chrome://extensions`.
+
+---
+
+<details>
+<summary>Advanced: install from a terminal instead of double-clicking</summary>
+
+**Windows (PowerShell):**
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass -Force
+& ".\local-engine\install\install-windows.ps1" -ExtensionId eoaibojoneilhiagjmmhbbgehnmloelj -Browser all
+```
+
+**macOS (Terminal):**
+```bash
+bash "./local-engine/install/install-mac.sh"
+```
+
+Diagnose a broken install:
+- Windows: `& ".\local-engine\install\doctor-windows.ps1" -Ping`
+- macOS: `bash "./local-engine/install/doctor-mac.sh" --ping`
+</details>
