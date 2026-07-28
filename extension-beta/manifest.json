@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "Booking Bandit (Beta)",
+  "version": "1.2.0",
+  "description": "AI-powered DM coach for Instagram and Facebook Messenger — Local Claude Engine beta",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxT+m5FtkoLLvw/KtFyD1msEpFT0NImQ9oaVXzd7Ej6iB7rAA5F8t1AHPNh3D0kEbefVHaIelb0Q8IUT6AsplJazTxWfiauqp7UnEUt/9d8ok/9UV0v93hSNTULlH3kkATNxsaVP4tDBJOWMQx5miNTDGIbzFFAErAiiPdZ2z0Mp631qb9IAzglcdvENswNPhJziu4R+tl9C8ygEaFPXllTa95Benbbd2/Mu0HF2I9HLfgXZHmyv21Gk9/3Zvi69z9JC+lbkKrKmJj3/HkFNuRNo65rDhJgvdz1C7RnAbhB5qQYwH4rsdij/v09TA2RFoD+06y5BaX4g6b83UQD736wIDAQAB",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "notifications",
+    "identity",
+    "tabs",
+    "activeTab",
+    "scripting",
+    "nativeMessaging"
+  ],
+  "host_permissions": [
+    "https://*.instagram.com/*",
+    "https://*.facebook.com/*",
+    "https://*.messenger.com/*",
+    "https://accounts.google.com/*",
+    "https://www.googleapis.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.instagram.com/*",
+        "https://*.facebook.com/*",
+        "https://*.messenger.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["browser-compat.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "action": {
+    "default_title": "Open Booking Bandit"
+  }
+}

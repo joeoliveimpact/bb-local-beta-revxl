@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Icons</title>
+</head>
+<body>
+    <h2>Icon Generator</h2>
+    <p>Open this file in a browser and click the button to download placeholder icons.</p>
+    <button onclick="generateIcons()">Generate & Download Icons</button>
+
+    <script>
+        function generateIcons() {
+            const sizes = [16, 48, 128];
+
+            sizes.forEach(size => {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+
+                // Red background
+                ctx.fillStyle = '#dc2626';
+                ctx.fillRect(0, 0, size, size);
+
+                // White shield shape
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.moveTo(size * 0.5, size * 0.2);
+                ctx.lineTo(size * 0.2, size * 0.35);
+                ctx.lineTo(size * 0.2, size * 0.6);
+                ctx.quadraticCurveTo(size * 0.2, size * 0.85, size * 0.5, size * 0.9);
+                ctx.quadraticCurveTo(size * 0.8, size * 0.85, size * 0.8, size * 0.6);
+                ctx.lineTo(size * 0.8, size * 0.35);
+                ctx.closePath();
+                ctx.fill();
+
+                // Download
+                canvas.toBlob(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `icon${size}.png`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                });
+            });
+
+            alert('Icons generated! Check your downloads folder for icon16.png, icon48.png, and icon128.png. Move them to the extension/icons/ folder.');
+        }
+    </script>
+</body>
+</html>

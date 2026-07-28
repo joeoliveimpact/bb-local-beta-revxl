@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REVSetter AI — Preview</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    /* Wrap the preview in a sidebar-sized frame so it looks like the real side panel */
+    body { background: #2a2a2a; }
+    #preview-frame {
+      max-width: 420px;
+      margin: 32px auto;
+      height: calc(100vh - 64px);
+      background: var(--color-background);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    #root { height: 100%; }
+  </style>
+</head>
+<body>
+  <div id="preview-frame">
+    <div id="root"></div>
+  </div>
+
+  <!-- Mocks chrome.* before the real app code runs -->
+  <script src="chrome-shim.js"></script>
+  <!-- Real app code, unmodified -->
+  <script src="../browser-compat.js"></script>
+  <script src="../sidepanel.js"></script>
+</body>
+</html>
