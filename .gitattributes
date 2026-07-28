@@ -1,0 +1,7 @@
+# Mac/Unix scripts MUST stay LF — a CRLF shebang breaks with "bad interpreter" on macOS.
+*.sh text eol=lf
+*.command text eol=lf
+*.mjs text eol=lf
+# Windows scripts keep CRLF.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
