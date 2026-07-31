@@ -17,6 +17,10 @@ You must already have:
 
 If you have those, setup below is just a couple of clicks — no commands to type.
 
+**Don't have Claude Code yet, or not sure?** Open this folder in Claude Desktop and type
+`/bb-setup`. It checks what's missing, installs it, and walks you through the rest of
+this page one step at a time.
+
 ---
 
 ## Step 1 — Install the helper (double-click)
