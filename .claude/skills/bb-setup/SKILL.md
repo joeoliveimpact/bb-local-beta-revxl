@@ -1,6 +1,6 @@
 ---
 name: bb-setup
-description: Walk a coach through setting up Booking Bandit's Local Claude Engine on their own computer, from "nothing installed but Claude Desktop" through a working DM draft. Covers the Node/Claude Code CLI dependency check, installing the CLI, the interactive Claude sign-in, the helper installer, loading the Chrome extension, the account gate, and the final in-panel test. Use when the coach says "set up Booking Bandit", "install the local engine", "/bb-setup", "get Booking Bandit working on my computer", or when they have the beta bundle and don't know what to do with it. Also handles "Booking Bandit stopped working" by running the doctor.
+description: Walk a coach through setting up Booking Bandit's Local Claude Engine on their own computer, from "nothing installed but Claude Desktop" through a working DM draft. Covers the Node/Claude Code CLI dependency check, installing the CLI, the interactive Claude sign-in, the helper installer, loading the Chrome extension, drafting the seven profile fields from the coach's own brand brain instead of making them type, the account gate, and the final in-panel test. Use when the coach says "set up Booking Bandit", "install the local engine", "/bb-setup", "get Booking Bandit working on my computer", or when they have the beta bundle and don't know what to do with it. Also handles "Booking Bandit stopped working" by running the doctor.
 ---
 
 # Booking Bandit Local Engine setup
@@ -192,16 +192,85 @@ step 4.
 
 ---
 
-## Step 6 ... sign in and check the gate
+## Step 6 ... sign in, then fill the profile FROM THEIR BRAND BRAIN
 
-Have them open the **Booking Bandit (Beta)** side panel and sign in with Google, then
-fill in their profile.
+Have them open the **Booking Bandit (Beta)** side panel and sign in with Google.
 
-Now the part that has already bitten a real coach. Have them open **Settings** (gear) →
-**Key** tab, and tell you what they see.
+Then the setup form asks for seven things. **Do not make them type these and do not
+type them yourself.** They already exist in the coach's brand brain. Go get them.
+
+### 6a. Find the brand brain (Lane A)
+
+Look in `~/.claude/revxl/` for brand folders. Each holds `voc/` with these files:
+
+| File | What it gives you |
+|---|---|
+| `business-config.md` | avatar definition, offer(s) + promise, enemy/positioning, proof assets |
+| `voice-guide.md` | Cadence, Vocabulary, Signature phrases, Stance, Edge read ... **register-tagged** |
+| `voc-profile.md` | Pains / Desired outcomes / Objections, ranked by frequency, with verbatim phrasing |
+
+- **No `~/.claude/revxl/` at all** ... they have no brand brain yet. Say so plainly, then
+  fall back: ask them the seven questions conversationally and draft from their answers.
+  Do not stall the install over it.
+- **More than one brand folder** ... ask which one. Never guess.
+- **Check the stamp block at the top of each file.** If `provisional: true`
+  (`source_count` under 3), the brain is built on thin evidence. Still use it, but tell
+  them: "this is drafted from a light brand brain, read it carefully before you save."
+
+### 6b. Draft the seven fields
+
+Map them like this. Read the source files first ... never fill one from memory:
+
+| Field | Source |
+|---|---|
+| `business_name` | `business-config.md` |
+| `niche` | `business-config.md` positioning |
+| `ideal_client` | `business-config.md` avatar, in the avatar's own words |
+| `tone_preferences` | `voice-guide.md` ... **the DM register, not the content register** |
+| `target_pain_points` | `voc-profile.md` Pains, highest-frequency first |
+| `services_offered` | `business-config.md` offer(s) + promise |
+| `booking_link` | **not in the brand brain ... you must ask them for it** |
+
+Two rules that decide whether this is any good:
+
+**Tone is register-specific and the registers disagree.** `voice-guide.md` tags entries
+by register. A coach's captions and their DMs are usually nothing alike ... one real
+brand brain reads "captions are clipped, confrontational, and swear; DMs are warm,
+permissive, and barely swear." Booking Bandit writes **DMs**. Pull the spoken/one-to-one
+register. If you fill this from the content register, every draft will sound wrong and
+they will blame the product.
+
+**Never use Mirror Language as pain points.** `voc-profile.md` may carry a
+clearly-labeled "Mirror Language (hypothesis)" subsection. That is the coach's own
+words about their own experience, not their audience's words. It is explicitly guarded
+against exactly this use. Pull only from the ranked Pains section.
+
+### 6c. Hand it over
+
+Give them each field as its own labeled block they can copy straight into the form.
+Seven small blocks, not one wall of text ... they are pasting into seven separate inputs.
+
+Then tell them to read it before saving, in these words: "this is drafted from your own
+brand brain, so it should sound like you ... if anything reads off, fix it now, because
+every DM draft is built on it."
+
+Wait for them to confirm the form is saved before moving on. `setup_complete` has to be
+true or the engine gate fails later with a confusing error.
+
+**If a coach tries to screenshot the form and paste it to you instead:** don't send them
+down that road, you already have better source material than a screenshot. It also goes
+wrong on Mac ... plain **Cmd-Shift-4** saves the image to the Desktop and puts nothing on
+the clipboard, so there is nothing to paste and they end up hunting for a file. Add
+**Ctrl** (**Cmd-Ctrl-Shift-4**) to copy it instead. Tell them that only if they actually
+need to send you a screenshot of something else.
+
+## Step 7 ... check the gate
+
+Now the part that has already bitten two real coaches. Have them open **Settings**
+(gear) → **Key** tab, and tell you what they see.
 
 - **They see an engine choice with a "Local" option** ... good, have them pick Local, then
-  go to Step 7.
+  go to Step 8.
 - **They only see the bring-your-own-key / paid version, no Local option** ... their
   account is not switched on for the beta yet. **They cannot fix this themselves and
   neither can you.** It is a permission Joe flips on his end.
@@ -216,7 +285,7 @@ Now the part that has already bitten a real coach. Have them open **Settings** (
 
 ---
 
-## Step 7 ... full restart, then the real test
+## Step 8 ... full restart, then the real test
 
 **A normal window-close is not enough.** Chrome only notices the helper after it fully
 quits. This is the single most common reason setup "didn't work."
