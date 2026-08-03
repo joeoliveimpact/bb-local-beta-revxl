@@ -309,6 +309,49 @@ real **Generate** on an actual DM thread so they see it work on their own conver
 
 ---
 
+## Setting up a VA / setter on the coach's account
+
+A coach may want their assistant drafting DMs from the assistant's own machine, using
+the coach's Claude subscription and the coach's voice. Ask **one question first**:
+
+> "Is this your own computer, or are you setting this up for someone who works for you?"
+
+If it's a VA, everything above is the same **except identity**. The rule:
+
+**The VA signs in as the coach, on both logins.** Same Google account in the Booking
+Bandit panel, same Claude account in the terminal. Two machines, one identity.
+
+Why it has to be that way:
+- The drafts come out in the **coach's** voice because they read the coach's profile
+  and brand brain. A VA signed in under their own email gets an empty profile and
+  generic drafts.
+- Nothing extra has to be switched on. The account is already whitelisted, so the VA
+  inherits it. **Do not ask Joe to grant anything for a VA** ... there is no second
+  account to grant.
+
+So on the VA's machine, run Steps 1 through 8 exactly as written, with these changes:
+- **Step 3 (Claude sign-in):** the coach logs in, not the VA. The coach should type
+  their own password rather than hand it over. Once it is done, the terminal can be
+  closed ... the login persists and the helper uses it from then on.
+- **Step 6 (profile):** already filled, because it is the coach's account. Skip the
+  brand-brain draft entirely and just confirm the fields are populated.
+- **Step 7 (gate):** should already show **Local**. If it doesn't, they signed in with
+  the wrong Google account. Check that before escalating anything.
+
+Tell the coach the two things that are true about this setup, plainly:
+
+1. **They share one rate limit.** Both machines draft against the same Claude
+   subscription. A heavy day on one side slows the other, and `rate_limited` errors
+   will show up sooner than either expects.
+2. **This puts the coach's Claude and Google logins on someone else's computer.**
+   That is a real access decision, not a technical detail. Anthropic's subscription
+   plans are sold for individual use, so the coach should make this call knowingly and
+   revoke it (change the password, sign the extension out) the day that person stops
+   working for them.
+
+Do not talk a coach out of it and do not talk them into it. State both, let them decide,
+then carry on with the install.
+
 ## If something breaks (now or three weeks from now)
 
 Run these in order. Stop at the first one that explains it.
