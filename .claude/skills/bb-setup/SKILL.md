@@ -199,9 +199,12 @@ Have them open the **Booking Bandit (Beta)** side panel and sign in with Google.
 Then the setup form asks for seven things. **Do not make them type these and do not
 type them yourself.** They already exist in the coach's brand brain. Go get them.
 
-### 6a. Find the brand brain (Lane A)
+### 6a. Gather source material (Lane A ... you do all of this, silently)
 
-Look in `~/.claude/revxl/` for brand folders. Each holds `voc/` with these files:
+Work **down** this ladder. Stop as soon as you have enough to fill all seven fields.
+Never ask the coach for something you can go read.
+
+**Tier 1 ... the brand brain.** `~/.claude/revxl/<brand>/voc/`:
 
 | File | What it gives you |
 |---|---|
@@ -209,13 +212,25 @@ Look in `~/.claude/revxl/` for brand folders. Each holds `voc/` with these files
 | `voice-guide.md` | Cadence, Vocabulary, Signature phrases, Stance, Edge read ... **register-tagged** |
 | `voc-profile.md` | Pains / Desired outcomes / Objections, ranked by frequency, with verbatim phrasing |
 
-- **No `~/.claude/revxl/` at all** ... they have no brand brain yet. Say so plainly, then
-  fall back: ask them the seven questions conversationally and draft from their answers.
-  Do not stall the install over it.
-- **More than one brand folder** ... ask which one. Never guess.
-- **Check the stamp block at the top of each file.** If `provisional: true`
-  (`source_count` under 3), the brain is built on thin evidence. Still use it, but tell
-  them: "this is drafted from a light brand brain, read it carefully before you save."
+More than one brand folder → ask which one, never guess. Check the stamp block: if
+`provisional: true` (`source_count` under 3) it is built on thin evidence ... still use
+it, but say "this is drafted from a light brand brain, read it before you save."
+
+**Tier 2 ... their workspaces.** No brand brain, or it's missing pieces? Go look at the
+work itself. Check the current workspace and their other Claude project folders for:
+`CLAUDE.md`, `README`, `PLANNING.md`, `GOALS.md`, and anything named like offer / ICP /
+avatar / niche / brand / positioning / services. A coach who has been working with
+Claude has usually written their business down somewhere already.
+
+**Tier 3 ... Claude's memory.** `~/.claude/projects/*/memory/MEMORY.md` and the memory
+files it indexes. These often carry the business facts that never made it into a doc.
+
+**Tier 4 ... ask them.** Only for what tiers 1-3 genuinely could not answer. Ask just
+those questions, not all seven. A coach who watched you find five of their fields is
+happy to hand you the other two.
+
+Say one line about where it came from ("pulled these from your brand brain" / "from your
+workspace docs, you have no brand brain yet"), then move on. Do not narrate the search.
 
 ### 6b. Draft the seven fields
 
@@ -245,10 +260,29 @@ clearly-labeled "Mirror Language (hypothesis)" subsection. That is the coach's o
 words about their own experience, not their audience's words. It is explicitly guarded
 against exactly this use. Pull only from the ranked Pains section.
 
-### 6c. Hand it over
+### 6c. Hand it over as seven copy-paste blocks
 
-Give them each field as its own labeled block they can copy straight into the form.
-Seven small blocks, not one wall of text ... they are pasting into seven separate inputs.
+The form has seven separate inputs, so give them **seven separate fenced blocks**, each
+with the field name as the heading above it. Never one wall of text they have to carve
+up. They should be able to go heading by heading, copy, paste, next.
+
+Field content only inside each block ... no labels, no quotes, no bullet characters
+inside the block, nothing they'd have to delete after pasting. Exactly this shape:
+
+**Business Name**
+```
+Engine For Impact
+```
+
+**Niche**
+```
+...
+```
+
+Keep each one to what fits a form field: a phrase for Business Name and Niche, two or
+three sentences for Ideal Client and Services Offered, a comma-separated list for
+Target Pain Points, a couple of concrete sentences for Tone Preferences. Booking Link
+is a bare URL.
 
 Then tell them to read it before saving, in these words: "this is drafted from your own
 brand brain, so it should sound like you ... if anything reads off, fix it now, because
