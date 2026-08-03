@@ -118,22 +118,70 @@ $env:Path = (Split-Path -Parent $NodeBin) + ";" + $env:Path
 # --- 2. Claude Code CLI ------------------------------------------------------
 Say "Step 2 of 5 - installing Claude Code"
 
+# Pull the freshly-written user/machine PATH out of the registry. An installer that
+# edits PATH cannot change THIS already-running process, so without this a successful
+# install still looks like "not on PATH".
+function Sync-PathFromRegistry {
+  $m = [Environment]::GetEnvironmentVariable('Path','Machine')
+  $u = [Environment]::GetEnvironmentVariable('Path','User')
+  $env:Path = (@($m, $u, $env:Path) | Where-Object { $_ }) -join ';'
+}
+
 if (Get-Command claude -ErrorAction SilentlyContinue) {
   Info "already installed"
 } else {
+  # Official native installer first. It ships a real claude.exe, manages its own PATH,
+  # verifies a checksum, and needs neither npm nor Node - which removes two whole
+  # failure classes seen in the field: npm.ps1 blocked by execution policy, and npm's
+  # global prefix (%APPDATA%\npm) not being on PATH under a portable Node.
   Info "this takes a minute or two, lots of text is normal..."
-  # npm.cmd, NOT npm. Bare `npm` resolves to npm.ps1, which execution policy blocks on
-  # a default-Restricted machine ("running scripts is disabled on this system"). A .cmd
-  # is not a PowerShell script and is never gated.
-  $npmCmd = Join-Path (Split-Path -Parent $NodeBin) 'npm.cmd'
-  if (Test-Path $npmCmd) {
-    & $npmCmd install -g '@anthropic-ai/claude-code' --no-audit --no-fund
-  } else {
-    & npm install -g '@anthropic-ai/claude-code' --no-audit --no-fund
+  try {
+    & ([scriptblock]::Create((Invoke-RestMethod -Uri 'https://claude.ai/install.ps1' -TimeoutSec 120)))
+  } catch {
+    Info "official installer did not complete, falling back to npm..."
   }
-  if ($LASTEXITCODE -ne 0) { Die "Claude Code install failed. Scroll up for the reason and send Joe a screenshot." }
+
+  Sync-PathFromRegistry
+
+  # The native installer drops claude.exe in ~\.local\bin and, as of 2.1.220, prints
+  # "Native installation exists but ...\.local\bin is not in your PATH" WITHOUT adding
+  # it. So add it ourselves - to this process so the rest of this run works, and to the
+  # user PATH so a future terminal can run `claude` too. User scope needs no admin.
+  $localBin = Join-Path $env:USERPROFILE '.local\bin'
+  if (Test-Path (Join-Path $localBin 'claude.exe')) {
+    if (($env:Path -split ';' | Where-Object { $_.TrimEnd('\') -ieq $localBin.TrimEnd('\') }).Count -eq 0) {
+      $env:Path = "$localBin;$env:Path"
+    }
+    try {
+      $userPath = [Environment]::GetEnvironmentVariable('Path','User')
+      if (($userPath -split ';' | Where-Object { $_.TrimEnd('\') -ieq $localBin.TrimEnd('\') }).Count -eq 0) {
+        $newUserPath = if ($userPath) { "$userPath;$localBin" } else { $localBin }
+        [Environment]::SetEnvironmentVariable('Path', $newUserPath, 'User')
+        Info "added $localBin to your PATH"
+      }
+    } catch {
+      Info "could not save PATH permanently - this run is fine, but a new window may not find claude"
+    }
+  }
+
   if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
-    Die "Claude Code installed but did not appear on PATH. Send Joe a screenshot."
+    # Fallback: npm. npm.cmd NOT npm, since npm.ps1 is gated by execution policy.
+    $npmCmd = Join-Path (Split-Path -Parent $NodeBin) 'npm.cmd'
+    if (-not (Test-Path $npmCmd)) { $npmCmd = 'npm.cmd' }
+    & $npmCmd install -g '@anthropic-ai/claude-code' --no-audit --no-fund
+    if ($LASTEXITCODE -ne 0) { Die "Claude Code install failed. Scroll up for the reason and send Joe a screenshot." }
+
+    # npm's global prefix on Windows is %APPDATA%\npm regardless of where node lives,
+    # and with a portable Node nothing has ever put it on PATH. Add it explicitly.
+    try {
+      $prefix = (& $npmCmd config get prefix 2>$null | Out-String).Trim()
+      if ($prefix -and (Test-Path $prefix)) { $env:Path = "$prefix;$env:Path" }
+    } catch { }
+    Sync-PathFromRegistry
+  }
+
+  if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
+    Die "Claude Code installed but did not appear on PATH. Close this window, open a NEW PowerShell, and run the command again."
   }
   Info "installed"
 }
