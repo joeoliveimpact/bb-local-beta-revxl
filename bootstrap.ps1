@@ -16,6 +16,17 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference    = 'SilentlyContinue'   # Invoke-WebRequest is ~10x slower with it on
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
+# `irm | iex` runs THIS script as a string, which execution policy does not gate - but
+# every .ps1 FILE it then touches is gated. On a default-Restricted machine that means
+# npm.ps1 and install-windows.ps1 both refuse to run. Lift it for this process only:
+# no admin rights, dies with the window, machine policy untouched.
+try {
+  Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force -ErrorAction Stop
+} catch {
+  # Locked down by group policy. Not fatal - npm is invoked via npm.cmd and the helper
+  # installer via `powershell -ExecutionPolicy Bypass -File`, neither of which needs it.
+}
+
 $Repo       = 'joeoliveimpact/bb-local-beta-revxl'
 $ExtId      = 'eoaibojoneilhiagjmmhbbgehnmloelj'
 $BBHome     = Join-Path $env:USERPROFILE '.booking-bandit'
@@ -111,7 +122,15 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
   Info "already installed"
 } else {
   Info "this takes a minute or two, lots of text is normal..."
-  & npm install -g '@anthropic-ai/claude-code' --no-audit --no-fund
+  # npm.cmd, NOT npm. Bare `npm` resolves to npm.ps1, which execution policy blocks on
+  # a default-Restricted machine ("running scripts is disabled on this system"). A .cmd
+  # is not a PowerShell script and is never gated.
+  $npmCmd = Join-Path (Split-Path -Parent $NodeBin) 'npm.cmd'
+  if (Test-Path $npmCmd) {
+    & $npmCmd install -g '@anthropic-ai/claude-code' --no-audit --no-fund
+  } else {
+    & npm install -g '@anthropic-ai/claude-code' --no-audit --no-fund
+  }
   if ($LASTEXITCODE -ne 0) { Die "Claude Code install failed. Scroll up for the reason and send Joe a screenshot." }
   if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
     Die "Claude Code installed but did not appear on PATH. Send Joe a screenshot."
@@ -147,8 +166,13 @@ Info "saved to $BundleDir"
 # host is spawnable, which does not require an authenticated claude.
 Say "Step 4 of 5 - installing the helper"
 
-& (Join-Path $BundleDir 'local-engine\install\install-windows.ps1') -ExtensionId $ExtId -Browser all
-if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne $null) {
+# Launched as a SEPARATE powershell process with -ExecutionPolicy Bypass rather than
+# dot-invoked. Invoking the .ps1 in-process is gated by execution policy on a default
+# Restricted machine; a child process with an explicit -ExecutionPolicy is not, and it
+# is the same call shape the double-click .cmd installer already uses.
+$installer = Join-Path $BundleDir 'local-engine\install\install-windows.ps1'
+& powershell -NoProfile -ExecutionPolicy Bypass -File $installer -ExtensionId $ExtId -Browser all
+if ($LASTEXITCODE -ne 0) {
   Die "Helper install failed. Scroll up - the last few lines say why - and send Joe a screenshot."
 }
 
