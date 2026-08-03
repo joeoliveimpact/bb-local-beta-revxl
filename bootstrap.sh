@@ -128,20 +128,50 @@ bash "$BUNDLE_DIR/local-engine/install/install-mac.sh" \
 # --- 5. Login ----------------------------------------------------------------
 say "Step 5 of 5 - signing in to Claude"
 
-printf '\n'
-printf '   >> THE COACH DOES THIS PART, NOT THE ASSISTANT. <<\n\n'
-printf '   A sign-in link is about to appear below.\n'
-printf '   Send that link to the coach. They open it, sign in with THEIR\n'
-printf '   Claude account, and send back the code it gives them.\n'
-printf '   Paste that code here.\n\n'
-printf '   The coach never types a password on this computer.\n\n'
+# `claude auth login` and NOT bare `claude`: bare claude starts a full interactive
+# session, which on a fresh machine means a login AND a "do you trust this folder"
+# prompt, then leaves a non-technical user sitting in a REPL they have to work out how
+# to exit. auth login does the one thing and returns.
+auth_status() { claude auth status --json 2>/dev/null || true; }
 
-if [ -e /dev/tty ]; then
-  # stdin is the curl pipe, so hand the login a real keyboard or it reads EOF and exits.
-  claude < /dev/tty || true
-else
+STATUS="$(auth_status)"
+if printf '%s' "$STATUS" | grep -q '"loggedIn"[[:space:]]*:[[:space:]]*true'; then
+  WHO="$(printf '%s' "$STATUS" | sed -n 's/.*"email"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
+  info "already signed in as $WHO - nothing to do"
+elif [ ! -e /dev/tty ]; then
   info "Could not open an interactive prompt from this pipe."
-  info "Open a NEW Terminal window and run this one word:  claude"
+  info "Open a NEW Terminal window and run:  claude auth login"
+else
+  printf '\n'
+  printf '   >> THE COACH DOES THIS PART, NOT THE ASSISTANT. <<\n\n'
+  printf "   Sign in with the COACH'S Claude account, not your own.\n"
+  printf '   The drafts only sound like the coach because they run on\n'
+  printf "   the coach's Claude.\n\n"
+
+  # stdin is the curl pipe, so every interactive read needs a real keyboard.
+  printf "   Coach's Claude email (press Enter to skip): "
+  read -r COACH_EMAIL < /dev/tty || COACH_EMAIL=""
+
+  if [ -n "$COACH_EMAIL" ]; then
+    claude auth login --email "$COACH_EMAIL" < /dev/tty || true
+  else
+    claude auth login < /dev/tty || true
+  fi
+
+  # Never claim success on an exit code alone - ask the CLI who it thinks it is.
+  STATUS="$(auth_status)"
+  if printf '%s' "$STATUS" | grep -q '"loggedIn"[[:space:]]*:[[:space:]]*true'; then
+    WHO="$(printf '%s' "$STATUS" | sed -n 's/.*"email"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
+    PLAN="$(printf '%s' "$STATUS" | sed -n 's/.*"subscriptionType"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
+    info "signed in as $WHO ($PLAN)"
+    if [ -n "$COACH_EMAIL" ] && [ -n "$WHO" ] && [ "$WHO" != "$COACH_EMAIL" ]; then
+      printf '\n   WARNING: signed in as %s, but you entered %s.\n' "$WHO" "$COACH_EMAIL"
+      printf '   If that is not the coach account, run:  claude auth logout\n'
+      printf '   then re-run this installer.\n'
+    fi
+  else
+    die "Sign-in did not complete. Open a new Terminal and run:  claude auth login"
+  fi
 fi
 
 # --- Done --------------------------------------------------------------------

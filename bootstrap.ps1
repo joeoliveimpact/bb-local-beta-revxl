@@ -155,18 +155,59 @@ if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne $null) {
 # --- 5. Login ----------------------------------------------------------------
 Say "Step 5 of 5 - signing in to Claude"
 
-Write-Host ""
-Write-Host "   >> THE COACH DOES THIS PART, NOT THE ASSISTANT. <<" -ForegroundColor Yellow
-Write-Host ""
-Write-Host "   A sign-in link is about to appear below."
-Write-Host "   Send that link to the coach. They open it, sign in with THEIR"
-Write-Host "   Claude account, and send back the code it gives them."
-Write-Host "   Paste that code here."
-Write-Host ""
-Write-Host "   The coach never types a password on this computer."
-Write-Host ""
+# `claude auth login` and NOT bare `claude`: bare claude starts a full interactive
+# Claude Code session, which on a fresh machine means a login AND a "do you trust this
+# folder" prompt, then drops a non-technical user into a REPL they have to work out how
+# to leave. auth login does the one thing and exits.
+function Get-AuthStatus {
+  $prev = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  $raw = ''
+  try { $raw = (& claude auth status --json 2>$null | Out-String) } catch { $raw = '' }
+  $ErrorActionPreference = $prev
+  return $raw
+}
 
-& claude
+$status = Get-AuthStatus
+if ($status -match '"loggedIn"\s*:\s*true') {
+  $who = ''
+  if ($status -match '"email"\s*:\s*"([^"]+)"') { $who = $Matches[1] }
+  Info "already signed in as $who - nothing to do"
+} else {
+  Write-Host ""
+  Write-Host "   >> THE COACH DOES THIS PART, NOT THE ASSISTANT. <<" -ForegroundColor Yellow
+  Write-Host ""
+  Write-Host "   Sign in with the COACH'S Claude account, not your own."
+  Write-Host "   The drafts only sound like the coach because they run on the"
+  Write-Host "   coach's Claude."
+  Write-Host ""
+
+  $coachEmail = Read-Host "   Coach's Claude email (press Enter to skip)"
+
+  if ($coachEmail) {
+    & claude auth login --email $coachEmail
+  } else {
+    & claude auth login
+  }
+
+  # Never claim success on an exit code alone - ask the CLI who it thinks it is.
+  $status = Get-AuthStatus
+  if ($status -match '"loggedIn"\s*:\s*true') {
+    $who = ''
+    if ($status -match '"email"\s*:\s*"([^"]+)"') { $who = $Matches[1] }
+    $plan = ''
+    if ($status -match '"subscriptionType"\s*:\s*"([^"]+)"') { $plan = $Matches[1] }
+    Info "signed in as $who ($plan)"
+    if ($coachEmail -and $who -and ($who -ne $coachEmail)) {
+      Write-Host ""
+      Write-Host "   WARNING: signed in as $who, but you entered $coachEmail." -ForegroundColor Yellow
+      Write-Host "   If that is not the coach's account, run:  claude auth logout" -ForegroundColor Yellow
+      Write-Host "   then re-run this installer." -ForegroundColor Yellow
+    }
+  } else {
+    Die "Sign-in did not complete. Open a new PowerShell window and run:  claude auth login"
+  }
+}
 
 # --- Done --------------------------------------------------------------------
 Write-Host ""
