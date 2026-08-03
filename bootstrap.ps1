@@ -40,7 +40,15 @@ Say "Step 1 of 5 - checking for Node"
 
 function Get-NodeMajor {
   param($exe)
-  try { $v = & $exe -p 'process.versions.node.split(".")[0]' 2>$null; return [int]$v } catch { return 0 }
+  # Use --version, NOT `node -p 'expr with "quotes"'`. PS 5.1 mangles embedded double
+  # quotes when passing an argument to a native exe, so node receives broken JS, exits
+  # 1, and prints nothing - which read as "no node installed" and reinstalled it on a
+  # machine that already had it. Parse the plain version string in PowerShell instead.
+  try {
+    $v = & $exe --version 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $v) { return 0 }
+    return [int]((("$v").Trim() -replace '^v','') -split '\.')[0]
+  } catch { return 0 }
 }
 
 $NodeBin = $null
